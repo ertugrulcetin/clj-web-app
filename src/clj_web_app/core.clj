@@ -1,4 +1,4 @@
-;;TODO Medium linki koy
+;; https://medium.com/@ertu.ctn/clojure-ile-%C3%B6rnek-web-uygulamas%C4%B1-b%C3%B6l%C3%BCm-1-f7c8fce7757a
 (ns clj-web-app.core
   (:require [patika.core :refer [resource get-routes]]
             [ring.adapter.jetty :refer [run-jetty]]
