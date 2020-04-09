@@ -2,6 +2,9 @@
 (ns clj-web-app.core
   (:require [patika.core :refer [resource get-routes]]
             [ring.adapter.jetty :refer [run-jetty]]
+            [ring.middleware.reload :refer [wrap-reload]]
+            [ring.middleware.cookies :refer [wrap-cookies]]
+            [ring.middleware.gzip :refer [wrap-gzip]]
             [compojure.core :as c]
             [compojure.route :as r]))
 
@@ -10,7 +13,8 @@
 (resource home
           :get ["/"]
           :content-type :html
-          :handle-ok (fn [ctx] "<html>
+          :handle-ok (fn [ctx]
+                       "<html>
                                 <body>
                                 Merhaba Clojure!
                                 <ul>
@@ -29,6 +33,7 @@
                                 {:name "Çetin" :age 22}]))
 
 
+
 ;; Gelen istek hash map veri yapısı şeklindedir, yukarıdaki her bir kullanıcı gibi
 (resource print-request
           :get ["/print-request"]
@@ -39,9 +44,23 @@
 (c/defroutes not-found (r/not-found "404!"))
 
 
+(defn wrap-some-data
+  [handler]
+  (fn [request]
+    (let [updated-request (assoc request :site-owner "Ertuğrul")]
+      ;; ▼▼▼ returns response ▼▼▼
+      (handler updated-request))))
+
+
 ;; :resource-ns-path -> src/clj_web_app dizini altındaki namespace'leri tarar ve tüm `resource`'ları bulup döndürür
-(def handler (get-routes {:resource-ns-path "clj-web-app."
-                          :not-found-route  'clj-web-app.core/not-found}))
+(def app-routes (get-routes {:resource-ns-path "clj-web-app."
+                             :not-found-route  'clj-web-app.core/not-found}))
+
+(def handler (-> #'app-routes
+                 wrap-reload
+                 wrap-some-data
+                 wrap-cookies
+                 wrap-gzip))
 
 
 (defn -main
